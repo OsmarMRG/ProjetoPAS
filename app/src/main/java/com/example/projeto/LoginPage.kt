@@ -50,10 +50,7 @@ class LoginPage : ComponentActivity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Initialize default users in database
-        val databaseInitializer = DatabaseInitializer(this)
-        databaseInitializer.initializeDefaultUsers()
+
         
         setContent {
             ProjetoTheme(darkTheme = true) {

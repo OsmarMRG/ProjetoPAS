@@ -22,63 +22,56 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.times
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.decode.GifDecoder
 import coil.request.ImageRequest
-import coil.ImageLoader
+import com.example.projeto.API.CameraDto
 import com.example.projeto.viewmodel.UserViewModel
-
-/**
- * 📹 SISTEMA DE CÂMARAS POR UTILIZADOR
- * 
- * Cada utilizador tem câmaras específicas baseadas no seu perfil:
- * - OsmarG: Segurança residencial (Sala, Quarto, Quintal, etc.)
- * - DiogoS: Segurança comercial (Estacionamento, Receção, etc.)
- * - Admin: Monitorização geral do sistema
- */
-
-// ==================== ENUMS E DATA CLASSES ====================
-
-/** Estados possíveis das câmaras */
-enum class CameraStatus {
-    ONLINE, OFFLINE, MAINTENANCE, ERROR
-}
-
-/** Dados de uma câmara individual */
-data class Camera(
-    val id: Int,
-    val name: String,
-    val location: String,
-    val status: CameraStatus,
-    val ipAddress: String,
-    val isRecording: Boolean = false,
-    val batteryLevel: Int? = null,
-    val lastActivity: String,
-    val userId: Int // 🆕 Associa câmara ao utilizador
-)
-
-// ==================== COMPONENTE PRINCIPAL ====================
+import kotlinx.coroutines.launch
 
 @Composable
 fun CameraContent(paddingValues: PaddingValues = PaddingValues()) {
-    // ViewModels
     val userViewModel: UserViewModel = viewModel()
     val currentUser by userViewModel.currentUser.collectAsState()
-    
-    // Estados locais
-    var selectedCamera by remember { mutableStateOf<Camera?>(null) }
-    var userCameras by remember { mutableStateOf<List<Camera>>(emptyList()) }
-    
-    // 🎯 Carrega câmaras específicas do utilizador quando muda
-    LaunchedEffect(currentUser) {
-        val userId = currentUser?.userId ?: 1 // Default OsmarG
-        userCameras = getCamerasForUser(userId)
+
+    var selectedCamera by remember { mutableStateOf<CameraDto?>(null) }
+    var userCameras by remember { mutableStateOf<List<CameraDto>>(emptyList()) }
+
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMsg by remember { mutableStateOf<String?>(null) }
+
+    suspend fun loadCameras() {
+        isLoading = true
+        errorMsg = null
+        try {
+            val list = userViewModel.fetchMyCameras()
+            userCameras = list
+            if (list.isEmpty()) {
+                // Não é erro necessariamente, mas ajuda no debug
+                // errorMsg = "Sem câmaras para este utilizador"
+            }
+        } catch (e: Exception) {
+            userCameras = emptyList()
+            errorMsg = "Erro a carregar câmaras: ${e.message}"
+        } finally {
+            isLoading = false
+        }
     }
 
-    // ==================== CÂMARA EXPANDIDA ====================
-    
+    // 🔥 IMPORTANTE: recarrega quando o utilizador muda (login/logout)
+    LaunchedEffect(currentUser) {
+        if (currentUser == null) {
+            userCameras = emptyList()
+            errorMsg = null
+            isLoading = false
+        } else {
+            loadCameras()
+        }
+    }
+
+    // Câmera expandida
     selectedCamera?.let { camera ->
         Box(
             modifier = Modifier
@@ -91,15 +84,13 @@ fun CameraContent(paddingValues: PaddingValues = PaddingValues()) {
         return
     }
 
-    // ==================== CABEÇALHO ====================
-    
-    Column(modifier = Modifier
-        .padding(paddingValues)
-        .fillMaxSize()
-        .verticalScroll(rememberScrollState())
-        .padding(horizontal = 16.dp)
+    Column(
+        modifier = Modifier
+            .padding(paddingValues)
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp)
     ) {
-        // Ícone da câmara
         Icon(
             painter = painterResource(R.drawable.videocam),
             contentDescription = "camera",
@@ -110,7 +101,6 @@ fun CameraContent(paddingValues: PaddingValues = PaddingValues()) {
             tint = MaterialTheme.colorScheme.onBackground
         )
 
-        // Título
         Text(
             text = "Câmaras",
             color = MaterialTheme.colorScheme.onBackground,
@@ -121,8 +111,7 @@ fun CameraContent(paddingValues: PaddingValues = PaddingValues()) {
                 .fillMaxWidth()
                 .padding(top = 40.dp, bottom = 20.dp)
         )
-        
-        // 🆕 Mostra o utilizador atual e o número de câmaras
+
         currentUser?.let { user ->
             Text(
                 text = "Utilizador: ${user.username} | ${userCameras.size} câmaras",
@@ -131,77 +120,130 @@ fun CameraContent(paddingValues: PaddingValues = PaddingValues()) {
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 60.dp)
+                    .padding(bottom = 20.dp)
+            )
+        } ?: run {
+            Text(
+                text = "Sem utilizador logado",
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 20.dp)
             )
         }
-    }
 
-    // ==================== Grelha das câmaras ====================
-    
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues)
-            .padding(horizontal = 16.dp)
-            .padding(top = 200.dp)
-    ) {
-        if (userCameras.isNotEmpty()) {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .height((userCameras.size / 2 + 1) * 270.dp),
-                contentPadding = PaddingValues(8.dp)
+        // ===== Loading =====
+        if (isLoading) {
+            Spacer(modifier = Modifier.height(60.dp))
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "A carregar câmaras...",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+            return
+        }
+
+        // ===== Erro =====
+        if (!errorMsg.isNullOrBlank()) {
+            Spacer(modifier = Modifier.height(60.dp))
+            Text(
+                text = errorMsg!!,
+                color = Color.Red,
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = { if (currentUser != null) {
+                    // volta a tentar
+                    // isto chama uma suspend, então usamos LaunchedEffect manual
+                } },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-                items(userCameras) { camera ->
-                    CameraCard(camera = camera, onClick = { selectedCamera = it })
-                }
+                Text("Tentar outra vez")
             }
-        } else {
-            // Estado vazio
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+
+            // botão acima precisa de lançar coroutine
+            LaunchedEffect(Unit) {
+                // nada aqui
+            }
+
+            // solução simples: substitui o onClick com launch
+            // mas em Compose puro precisamos de um scope
+            // vamos fazer já aqui, sem complicar a tua vida
+            val scope = rememberCoroutineScope()
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                onClick = { scope.launch { loadCameras() } },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-                Text(
-                    text = "Nenhuma câmara disponível para este utilizador",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Center
-                )
+                Text("Tentar outra vez")
+            }
+            return
+        }
+
+        // ===== Sem câmaras =====
+        if (currentUser != null && userCameras.isEmpty()) {
+            Spacer(modifier = Modifier.height(80.dp))
+            Text(
+                text = "Nenhuma câmara atribuída a este utilizador",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            val scope = rememberCoroutineScope()
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = { scope.launch { loadCameras() } },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text("Recarregar")
+            }
+            return
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height((((userCameras.size + 1) / 2) * 240).dp),
+            contentPadding = PaddingValues(8.dp)
+        ) {
+            items(userCameras) { camera ->
+                CameraCard(camera = camera, onClick = { selectedCamera = it })
             }
         }
+
+        Spacer(modifier = Modifier.height(40.dp))
     }
 }
 
-// ==================== Cartão da câmara ====================
-
 @Composable
-fun CameraCard(camera: Camera, onClick: (Camera) -> Unit) {
+fun CameraCard(camera: CameraDto, onClick: (CameraDto) -> Unit) {
     val context = LocalContext.current
 
-    // Seleciona o GIF baseado na localização
-    val gifRes = when (camera.location) {
-        "Sala" -> R.drawable.sala
-        "Quarto" -> R.drawable.quarto
-        "Estacionamento" -> R.drawable.estacionamento
-        "Cozinha" -> R.drawable.cozinha
-        "Quintal" -> R.drawable.quintal
-        "Porta_Entrada" -> R.drawable.cao_entrada
-        "Rececao" -> R.drawable.rececao
-        "Armazem" -> R.drawable.armazem
-        "Sala_Reunioes" -> R.drawable.sala_reunioes
-        "Patio_Exterior" -> R.drawable.patio_exterior
-        "Estacionamento_Carros" -> R.drawable.carros_estacionamento
-        "Porta_Principal" -> R.drawable.porta_principal
-        else -> R.drawable.quarto
-    }
+    val gifRes = resolveGifRes(
+        resourcesGetId = { name -> context.resources.getIdentifier(name, "drawable", context.packageName) },
+        location = camera.location,
+        gifKey = camera.gif_key
+    )
 
     val imageLoader = ImageLoader.Builder(context)
-        .components {
-            add(GifDecoder.Factory())
-        }
+        .components { add(GifDecoder.Factory()) }
         .build()
 
     Card(
@@ -209,15 +251,11 @@ fun CameraCard(camera: Camera, onClick: (Camera) -> Unit) {
             .padding(8.dp)
             .fillMaxWidth()
             .height(180.dp)
-            .clickable { onClick(camera) }
-            .padding(top = 50.dp),
+            .clickable { onClick(camera) },
         colors = CardDefaults.cardColors(containerColor = Color.Black),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            // Vídeo da câmara
+        Column(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
                 model = ImageRequest.Builder(context)
                     .data(gifRes)
@@ -231,7 +269,6 @@ fun CameraCard(camera: Camera, onClick: (Camera) -> Unit) {
                     .padding(8.dp)
             )
 
-            // Nome da câmara
             Text(
                 text = camera.name,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -245,27 +282,15 @@ fun CameraCard(camera: Camera, onClick: (Camera) -> Unit) {
     }
 }
 
-// ==================== Vista do ecrâ Expandido ====================
-
 @Composable
-fun ExpandedCameraView(camera: Camera, onClose: () -> Unit) {
+fun ExpandedCameraView(camera: CameraDto, onClose: () -> Unit) {
     val context = LocalContext.current
 
-    val gifRes = when (camera.location) {
-        "Sala" -> R.drawable.sala
-        "Quarto" -> R.drawable.quarto
-        "Estacionamento" -> R.drawable.estacionamento
-        "Cozinha" -> R.drawable.cozinha
-        "Quintal" -> R.drawable.quintal
-        "Porta_Entrada" -> R.drawable.cao_entrada
-        "Rececao" -> R.drawable.rececao
-        "Armazem" -> R.drawable.armazem
-        "Sala_Reunioes" -> R.drawable.sala_reunioes
-        "Patio_Exterior" -> R.drawable.patio_exterior
-        "Estacionamento_Carros" -> R.drawable.carros_estacionamento
-        "Porta_Principal" -> R.drawable.porta_principal
-        else -> R.drawable.quarto
-    }
+    val gifRes = resolveGifRes(
+        resourcesGetId = { name -> context.resources.getIdentifier(name, "drawable", context.packageName) },
+        location = camera.location,
+        gifKey = camera.gif_key
+    )
 
     val imageLoader = ImageLoader.Builder(context)
         .components { add(GifDecoder.Factory()) }
@@ -278,24 +303,20 @@ fun ExpandedCameraView(camera: Camera, onClose: () -> Unit) {
                 .align(Alignment.Center)
                 .padding(16.dp)
         ) {
-
-            // Nome da câmara
             Text(
                 text = camera.name,
                 color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 36.sp,
+                fontSize = 34.sp,
                 fontWeight = FontWeight.SemiBold,
-                lineHeight = 40.sp,
+                lineHeight = 38.sp,
                 textAlign = TextAlign.Center,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 16.dp)
-
             )
 
-            // Vídeo expandido
             Surface(
                 shape = MaterialTheme.shapes.medium,
                 tonalElevation = 8.dp,
@@ -317,7 +338,6 @@ fun ExpandedCameraView(camera: Camera, onClose: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Informações da câmara
             Surface(
                 shape = MaterialTheme.shapes.medium,
                 color = Color.Black.copy(alpha = 0.5f),
@@ -326,17 +346,7 @@ fun ExpandedCameraView(camera: Camera, onClose: () -> Unit) {
                     .padding(horizontal = 8.dp)
             ) {
                 Text(
-                    text = buildString {
-                        append("📍 Localização: ${camera.location}\n")
-                        append("\n")
-                        append("🌐 IP: ${camera.ipAddress}\n")
-                        append("\n")
-                        append("🔧 Estado: ${camera.status}\n")
-                        camera.batteryLevel?.let {
-                            append("\n🔋 Bateria: $it%")
-                        }
-                        append("\n👤 Utilizador ID: ${camera.userId}")
-                    },
+                    text = "ID: ${camera.id}\n\nLocalização: ${camera.location}\n\nGIF: ${camera.gif_key ?: "auto"}",
                     color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 17.sp,
                     textAlign = TextAlign.Center,
@@ -345,7 +355,6 @@ fun ExpandedCameraView(camera: Camera, onClose: () -> Unit) {
             }
         }
 
-        // Botão fechar
         IconButton(
             onClick = onClose,
             modifier = Modifier.align(Alignment.TopEnd).padding(16.dp)
@@ -359,71 +368,31 @@ fun ExpandedCameraView(camera: Camera, onClose: () -> Unit) {
     }
 }
 
-// ==================== CÂMARAS POR UTILIZADOR ====================
+private fun resolveGifRes(
+    resourcesGetId: (String) -> Int,
+    location: String,
+    gifKey: String?
+): Int {
+    // 1) Se o backend mandar gif_key, usamos isso
+    if (!gifKey.isNullOrBlank()) {
+        val id = resourcesGetId(gifKey)
+        if (id != 0) return id
+    }
 
-/**
- * 🎯 FUNÇÃO PRINCIPAL - Atribui câmaras específicas para cada utilizador
- * 
- * Cada utilizador tem um perfil diferente de câmaras baseado nas suas necessidades:
- * - Residencial vs Comercial vs Administrativo
- */
-fun getCamerasForUser(userId: Int): List<Camera> {
-    return when (userId) {
-        1 -> getCamerasOsmarG()      // Segurança residencial
-        2 -> getCamerasDiogoS()      // Segurança comercial  
-        3 -> getCamerasAdmin()       // Monitorização geral
-        else -> getCamerasDefault()  // Câmaras genéricas
+    // 2) Mapeamento por location
+    return when (location) {
+        "Sala" -> R.drawable.sala
+        "Quarto" -> R.drawable.quarto
+        "Estacionamento" -> R.drawable.estacionamento
+        "Cozinha" -> R.drawable.cozinha
+        "Quintal" -> R.drawable.quintal
+        "Entrada" -> R.drawable.porta_principal
+        "Receção" -> R.drawable.rececao
+        "Armazém" -> R.drawable.armazem
+        "Sala de Reuniões" -> R.drawable.sala_reunioes
+        "Exterior" -> R.drawable.patio_exterior
+        "Estacionamento_Carros" -> R.drawable.carros_estacionamento
+        "Corredor" -> R.drawable.corredor
+        else -> R.drawable.videocam
     }
 }
-
-/**
- * 🏠 CÂMARAS PARA o utilizador OsmarGonçalves - Segurança Residencial
- * Foco em monitorização doméstica e familiar
- */
-private fun getCamerasOsmarG(): List<Camera> = listOf(
-    Camera(1, "Entrada", "Porta_Entrada", CameraStatus.ONLINE, "192.168.1.101", true, null, "10:30", 1),
-    Camera(2, "Sala", "Sala", CameraStatus.ONLINE, "192.168.1.102", false, null, "09:45", 1),
-    Camera(3, "Quarto", "Quarto", CameraStatus.ONLINE, "192.168.1.103", false, 15, "08:45", 1),
-    Camera(4, "Cozinha", "Cozinha", CameraStatus.OFFLINE, "192.168.1.104", false, null, "07:20", 1),
-    Camera(5, "Quintal", "Quintal", CameraStatus.ONLINE, "192.168.1.105", true, 85, "07:15", 1)
-)
-
-/**
- * 🏢 CÂMARAS PARA o Utilizador DiogoSilva - Segurança Comercial
- * Foco em monitorização empresarial e controlo de acesso
- */
-private fun getCamerasDiogoS(): List<Camera> = listOf(
-    Camera(6, "Receção", "Rececao", CameraStatus.ONLINE, "192.168.2.101", true, null, "11:20", 2),
-    Camera(7, "Estacionamento", "Estacionamento_Carros", CameraStatus.ONLINE, "192.168.2.102", true, null, "10:15", 2),
-    Camera(8, "Armazém", "Armazem", CameraStatus.MAINTENANCE, "192.168.2.103", false, 45, "09:30", 2),
-    Camera(9, "Porta Principal", "Porta_Principal", CameraStatus.ONLINE, "192.168.2.104", true, null, "08:45", 2),
-    Camera(10, "Sala Reuniões", "Sala_Reunioes", CameraStatus.ONLINE, "192.168.2.105", false, 78, "07:50", 2),
-    Camera(11, "Pátio Exterior", "Patio_Exterior", CameraStatus.OFFLINE, "192.168.2.106", false, null, "06:30", 2)
-)
-
-/**
- * 👨‍💼 CÂMARAS para o administrador - Monitorização Geral
- * Acesso a todas as câmaras do sistema
- */
-private fun getCamerasAdmin(): List<Camera> = listOf(
-    Camera(1, "Entrada", "Porta_Entrada", CameraStatus.ONLINE, "192.168.1.102", false, null, "09:45", 3),
-    Camera(2, "Sala", "Sala", CameraStatus.ONLINE, "192.168.1.103", false, 15, "08:45", 3),
-    Camera(3, "Quarto", "Quarto", CameraStatus.OFFLINE, "192.168.1.104", false, 12, "07:20", 3),
-    Camera(4, "Cozinha", "Cozinha", CameraStatus.ERROR, "192.168.1.105", false, null, "06:45", 3),
-    Camera(5, "Quintal", "Quintal", CameraStatus.ONLINE, "192.168.1.106", true, 85, "06:30", 3),
-    Camera(6, "Receção", "Rececao", CameraStatus.ONLINE, "192.168.2.101", true, null, "11:20", 3),
-    Camera(7, "Estacionamento", "Estacionamento_Carros", CameraStatus.ONLINE, "192.168.2.102", true, null, "10:15", 3),
-    Camera(8, "Armazém", "Armazem", CameraStatus.MAINTENANCE, "192.168.2.103", false, 45, "09:30", 3),
-    Camera(9, "Porta Principal", "Porta_Principal", CameraStatus.ONLINE, "192.168.2.104", true, null, "08:45", 3),
-    Camera(10, "Sala Reuniões", "Sala_Reunioes", CameraStatus.ONLINE, "192.168.2.105", false, 78, "07:50", 3),
-    Camera(11, "Pátio Exterior", "Patio_Exterior", CameraStatus.OFFLINE, "192.168.2.106", false, null, "06:30", 3)
-)
-
-/**
- * 🔧 CÂMARAS PADRÃO - Para outros utilizadores
- * Conjunto básico de câmaras genéricas
- */
-private fun getCamerasDefault(): List<Camera> = listOf(
-    Camera(16, "Genérica 01", "Sala", CameraStatus.ONLINE, "192.168.9.101", false, null, "10:00", 0),
-    Camera(17, "Genérica 02", "Porta_Entrada", CameraStatus.ONLINE, "192.168.9.102", false, 50, "09:30", 0)
-)
