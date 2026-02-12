@@ -1,0 +1,895 @@
+/* --- CONFIGURAÇÕES GERAIS --- */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #222222;
+  color: #f0f0f0;
+  scroll-behavior: smooth;
+  width: 100%;
+}
+
+/* --- CABEÇALHO (NAVBAR) --- */
+header {
+  background-color: #000;
+  color: #fff;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+}
+
+header h3 {
+  margin: 0;
+  font-size: 2rem;
+  color: #2980B9;
+  /* Azul Principal */
+}
+
+.img-l img {
+  width: 100px;
+  /* Ajustado para o tamanho real da logo na nav */
+  height: auto;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  /* Faz a nav ocupar o espaço para empurrar os botões */
+}
+
+nav a {
+  color: #f0f0f0;
+  margin: 0 15px;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+nav a:hover {
+  color: #2980B9;
+  /* Azul Principal */
+}
+
+/* Contentor principal da direita */
+/* Contentor com espaço do limite da página */
+.nav-right-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-right: 40px; /* Espaço do canto direito da página */
+}
+
+/* Restaurar Botões (Fundo transparente, borda azul) */
+.btn-nav-outline {
+    background: transparent !important;
+    border: 2px solid #2980B9 !important;
+    color: #2980B9 !important;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-nav-outline:hover {
+    background: #2980B9 !important;
+    color: white !important;
+}
+
+/* Carrinho e Número Pequeno */
+.cart-icon-bg {
+    background-color: #2980B9;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.cart-icon-bg:hover {
+    transform: scale(1.1); 
+}
+
+.cart-number {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    color: white;
+    font-size: 11px; /* Número muito mais pequeno */
+    font-weight: bold;
+    background: #222; /* Fundo escuro discreto em vez de vermelho gigante */
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.cart-wrapper {
+    position: relative;
+    cursor: pointer;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.cart-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #ff0000; /* Cor de destaque para o número */
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+    border: 2px solid ;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+}
+
+/* Página Lateral */
+.cart-drawer {
+  position: fixed;
+  top: 0;
+  right: -400px; /* Escondido */
+  width: 320px;
+  height: 100%;
+  background: #1a1a1a;
+  z-index: 3000;
+  transition: 0.4s;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+}
+
+/* Estilo dos botões de quantidade dentro do carrinho */
+.cart-item-row button {
+  font-weight: bold;
+  height: 25px;
+  transition: 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cart-item-row button:hover {
+  filter: brightness(1.2);
+}
+
+.cart-footer {
+  background: #1a1a1a;
+  padding: 20px;
+  border-top: 1px solid #333;
+}
+
+.cart-drawer.open { right: 0; }
+
+.cart-header { padding: 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+.cart-content { flex: 1; padding: 20px; color: #ccc; }
+.cart-footer { padding: 20px; }
+.btn-checkout { width: 100%; padding: 12px; background: #2980B9; border: none; color: white; border-radius: 8px; cursor: pointer; }
+.close-drawer { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+
+/* Ajuste do Número do Carrinho */
+.cart-number {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #222;
+  color: white;
+  font-size: 10px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #2980B9;
+}
+
+/* --- BOTÕES DA NAVBAR (ARREDONDADOS) --- */
+.auth-buttons {
+  margin-left: auto !important;
+  display: flex !important;
+  gap: 10px;
+}
+
+.btn-nav {
+  width: auto !important;
+  margin-top: 0 !important;
+  padding: 8px 22px !important;
+  background-color: transparent;
+  border: 2px solid #2980B9;
+  color: #2980B9;
+  font-weight: bold;
+  border-radius: 30px;
+  /* Estilo redondo/cápsula */
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.btn-nav.login {
+  background-color: #2980B9;
+  color: #fff;
+}
+
+.btn-nav:hover {
+  background-color: #1A5276;
+  /* Azul Escuro para hover */
+  border-color: #1A5276;
+  color: #fff;
+  transform: scale(1.05);
+}
+
+/* --- SECÇÕES E TÍTULOS --- */
+section {
+  padding: 60px 20px;
+  text-align: center;
+  margin-top: 100px;
+}
+
+section:nth-child(even) {
+  background-color: #222222;
+}
+
+.section-title {
+  font-size: 3rem;
+  margin-bottom: 75px;
+  color: #2980B9;
+  /* Azul Principal */
+}
+
+/* --- SOBRE NÓS --- */
+.text-p p {
+  margin-bottom: 20px;
+}
+
+/* --- SLIDER DE PRODUTOS --- */
+.slider-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  max-width: 100%;
+  margin: auto;
+}
+
+/* Botão Comprar Profissional */
+/* Botão Comprar com o azul da Pax Security */
+.btn-comprar {
+    background-color: #2980B9 !important; /* Força o azul oficial */
+    color: white !important;
+    border: none !important;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-top: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-size: 12px;
+    width: 100%; /* Opcional: faz o botão ocupar a largura do card */
+}
+
+.btn-comprar:hover {
+    background-color: #1A5276 !important;
+}
+
+.cards-wrapper {
+    display: flex;
+    overflow-x: hidden; /* Importante para o JS controlar o scroll */
+    scroll-behavior: smooth; /* Para o movimento ser suave */
+    gap: 20px;
+    padding: 20px;
+}
+
+.card {
+  min-width: 250px;
+  background-color: #dcdcdc;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.card img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.card h3 {
+  color: #000;
+}
+
+.card p {
+  color: #555;
+}
+
+.card .preco {
+  font-weight: bold;
+  color: #1A5276;
+  /* Azul escuro para o preço */
+  margin-top: 10px;
+  display: block;
+}
+
+.slide-btn {
+  background-color: #2980B9;
+  color: white;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 10px;
+  height: 50px;
+  width: 50px;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.slide-btn:hover {
+  background-color: #1A5276;
+}
+
+/* --- GRELHA DE IMAGENS E APP --- */
+.images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.images-grid img {
+  width: 100%;
+  border-radius: 10px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.images-grid img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px #2980B9;
+}
+
+/* --- FORMULÁRIOS E BOTÕES GERAIS --- */
+.btn {
+  background: #2980B9;
+  border: none;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn:hover {
+  background: #1A5276;
+}
+
+input:focus,
+textarea:focus {
+  outline: 2px solid #2980B9;
+}
+
+/* CONTAINER PRINCIPAL DO QUIZ */
+.quiz-section {
+  background: #222222;
+  /* Mesma cor do seu site */
+  padding: 80px 20px;
+  display: flex;
+  justify-content: center;
+  margin-top: 0;
+}
+
+.quiz-container {
+  background: #1f1f1f;
+  /* Mesma cor do formulário Registe-se */
+  width: 100%;
+  max-width: 650px;
+  border-radius: 22px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  text-align: left;
+}
+
+.quiz-main {
+  padding: 40px;
+  color: #ffffff;
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+#label-step {
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 800;
+  color: #cccccc;
+}
+
+.progress-bar {
+  background: #3a3a3a;
+  /* Fundo da barra mais escuro */
+  height: 8px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+
+.progress {
+  background: #2980B9;
+  width: 0%;
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.6s ease;
+}
+
+#progress-percent {
+  color: #2980B9;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.quiz-step h3 {
+  font-size: 22px;
+  margin: 25px 0;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.quiz-step {
+  display: none;
+}
+
+.quiz-step.active {
+  display: block;
+  animation: fadeIn 0.5s ease;
+}
+
+.opt-btn {
+  width: 100%;
+  padding: 18px 25px;
+  margin-bottom: 12px;
+  border: 2px solid #2980B9;
+  background: #3a3a3a;
+  /* Fundo dos botões igual aos inputs do registo */
+  color: #ffffff;
+  border-radius: 50px;
+  font-size: 17px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: 0.3s;
+}
+
+.opt-btn:hover {
+  background: #2980B9;
+  border-color: #ffffff;
+}
+
+.opt-btn::after {
+  content: "→";
+  border: 1px solid #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.input-group-custom {
+  display: flex;
+  background: #3a3a3a;
+  border: 2px solid #2980B9;
+  border-radius: 50px;
+  overflow: hidden;
+  margin: 20px 0;
+}
+
+.input-group-custom input {
+  flex: 1;
+  padding: 15px 25px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 16px;
+  color: #ffffff;
+}
+
+.btn-next-blue {
+  background: #2980B9;
+  color: #ffffff;
+  border: none;
+  padding: 0 30px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-next-blue:hover {
+  background: #1A5276;
+}
+
+/* Botão Voltar Melhorado */
+.back-btn {
+  background: #3a3a3a;
+  border: 1px solid #2980B9;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 8px 20px;
+  border-radius: 50px;
+  font-size: 14px;
+  margin-top: 20px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.back-btn:hover {
+  background: #4a4a4a;
+  transform: translateX(-5px);
+  /* Pequeno efeito ao passar o rato */
+}
+
+.back-btn::before {
+  content: "←";
+  /* Seta para a esquerda */
+}
+
+/* --- CONTACTOS --- */
+
+#contato {
+  margin: 100px 0;
+}
+
+/* layout */
+.contact-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 80px;
+}
+
+/* mapa */
+.contact-map iframe {
+  width: 600px;
+  height: 450px;
+  border-radius: 18px;
+  border: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Título "Registe-se" centrado no topo */
+.form-register-title {
+  text-align: center;
+  color: white;
+  margin-bottom: 35px;
+  font-size: 1.8rem;
+  font-weight: bold;
+  width: 100%;
+}
+
+/* Contentor do formulário */
+.contact-form {
+  width: 450px;
+  padding: 40px;
+  border-radius: 22px;
+  background: #1f1f1f;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Cada bloco (Label + Input) */
+.contact-field {
+  width: 100%;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  /* ESTA LINHA mete o texto à esquerda */
+}
+
+.contact-field label {
+  color: #ccc;
+  font-size: 14px;
+  margin-bottom: 8px;
+  text-align: left;
+  /* Garante o alinhamento do texto */
+}
+
+.contact-field input {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background-color: #3a3a3a;
+  color: white;
+  font-size: 15px;
+  box-sizing: border-box;
+  /* Impede que o input saia para fora da caixa */
+}
+
+/* Garante que o campo ocupa a largura toda mesmo com a bandeira */
+.iti {
+  width: 100%;
+  display: block;
+}
+
+.iti__country-list {
+  background-color: #3a3a3a !important;
+  /* Cor do teu formulário */
+  color: white;
+}
+
+#telemovel {
+  padding-left: 95px !important;
+  transition: padding 0.3s ease;
+}
+
+/* Botão Enviar */
+.contact-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  background: #2980B9;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.contact-btn:hover {
+  background: #1A5276;
+}
+
+/* RODAPÉ COMPACTO */
+/* RODAPÉ COMPACTO E DISCRETO */
+.footer-compact {
+  background-color: #111;
+  padding: 30px 20px 20px;
+  border-top: 2px solid #2980B9;
+  font-size: 0.85rem;
+}
+
+.footer-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.footer-section h4 {
+  color: #fff;
+  margin-bottom: 15px;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+}
+
+/* --- ICONES DO RODAPÉ (BRANCOS E ALINHADOS) --- */
+
+/* Garante que os ícones do Instagram, Email e Telefone sejam Brancos */
+.contact-item i, 
+.insta-links i,
+.social-links i {
+    color: #ffffff !important; /* Força a cor branca */
+    font-size: 1.2rem;
+    width: 25px; /* Reserva espaço para não empurrar o texto */
+    text-align: center;
+    transition: 0.3s;
+}
+
+/* Alinhamento: Ícone ANTES do nome */
+.contact-item, 
+.insta-links a {
+    display: flex;
+    align-items: center; /* Alinha o ícone no meio do texto verticalmente */
+    gap: 10px;           /* Espaço entre o ícone e o nome */
+    text-decoration: none;
+    color: #aaa;         /* Cor do texto (cinza para ser discreto) */
+    margin-bottom: 10px;
+    transition: 0.3s;
+}
+
+/* Efeito ao passar o rato (Hover) */
+.insta-links a:hover, 
+.contact-item a:hover {
+    color: #fff;         /* O texto também fica branco no hover */
+}
+
+.insta-links a:hover i {
+    color: #2980B9 !important; /* O ícone fica azul da PAX ao passar o rato */
+    transform: scale(1.2);     /* O ícone cresce um pouco */
+}
+
+.footer-bottom {
+  text-align: center;
+  margin-top: 30px;
+  padding-top: 15px;
+  border-top: 1px solid #222;
+  color: #666;
+  font-size: 0.75rem;
+}
+
+.footer-bottom span {
+  color: #2980B9;
+  font-weight: bold;
+}
+
+/* 1. CAMADA DE FUNDO (MODAL) */
+.login-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.92);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(8px);
+}
+
+/* 2. CAIXA DE LOGIN */
+.login-container {
+  background-color: #1f1f1f;
+  width: 95%;
+  max-width: 420px;
+  padding: 45px 35px;
+  border-radius: 28px;
+  position: relative;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
+  text-align: center;
+  border: 1px solid #333;
+}
+
+/* 3. BOTÃO DE FECHAR */
+.close-login {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+/* 4. TÍTULO E LABELS */
+.login-container h2 {
+  color: #ffffff;
+  margin-bottom: 30px;
+  font-size: 26px;
+}
+
+.input-group-login {
+  text-align: left;
+  margin-bottom: 22px;
+}
+
+.input-group-login label {
+  display: block;
+  color: #2980B9;
+  font-size: 11px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* 5. A CAIXA DE E-MAIL (IGUAL AO REGISTE-SE) */
+.login-input {
+  width: 100% !important;
+  padding: 15px !important;
+  background-color: #3a3a3a !important;
+  /* Cor cinza do formulário */
+  border: 1px solid #444 !important;
+  border-radius: 14px !important;
+  color: white !important;
+  font-size: 16px !important;
+  outline: none !important;
+  box-sizing: border-box;
+}
+
+.login-input:focus {
+  border-color: #2980B9 !important;
+}
+
+/* 6. BOTÃO CONTINUAR */
+.btn-primary-login {
+  width: 100%;
+  padding: 16px;
+  background: #2980B9;
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-primary-login:hover {
+  background: #1A5276;
+}
+
+/* 7. DIVISOR E BOTÕES SOCIAIS */
+.divider-login {
+  margin: 30px 0;
+  border-bottom: 1px solid #333;
+  position: relative;
+}
+
+.divider-login span {
+  background: #1f1f1f;
+  padding: 0 15px;
+  color: #666;
+  font-size: 13px;
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.btn-social {
+  width: 100%;
+  padding: 12px;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: white;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+/* CORREÇÃO DAS IMAGENS GIGANTES */
+.btn-social img {
+  width: 20px !important;
+  height: 20px !important;
+  max-width: 20px !important;
+  object-fit: contain;
+}
+
+.apple-icon {
+  filter: invert(1);
+}
+
+
+/* Mantém os campos normais originais */
+.login-input {
+    padding-left: 15px !important; /* Ou o valor que usavas no início */
+}
+
+/* Aplica o recuo APENAS ao input de telemóvel para não bater na bandeira */
+#telemovelModal, #telemovel {
+    padding-left: 95px !important;
+}
+
+/* Garante que o container do intl-tel-input ocupa a largura toda */
+.iti { width: 100%; }
